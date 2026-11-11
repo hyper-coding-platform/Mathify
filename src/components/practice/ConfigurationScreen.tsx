@@ -41,7 +41,7 @@ export function ConfigurationScreen({ initial, onStart }: { initial: PracticeCon
   const submit = () => { setShowErrors(true); if (Object.keys(errors).length === 0) onStart(config); };
 
   return <main className="shell"><div className="container">
-    <header className="brand"><div className="brand-mark"><Calculator size={24} aria-hidden="true" /></div><div><h1>SSC Calculation Trainer</h1><p>Practice faster. Calculate smarter.</p></div></header>
+    <header className="brand"><div className="brand-mark"><Calculator size={24} aria-hidden="true" /></div><div><h1>SSC Calculation Trainer</h1><p>Practice faster. Calculate smarter.</p></div><a className="study-link" href="/study"><BookOpen size={16} aria-hidden="true" /> Study sheets</a></header>
     <div className="card">
       <section className="section"><SectionHeader number={1} title="Topic" description="What do you want to practice?" /><div className="topic-grid">{topics.map(({ id, label, icon: Icon }) => <button key={id} type="button" className={`choice-card ${config.topic === id ? "selected" : ""}`} onClick={() => setConfig((current) => ({ ...current, topic: id, enabledTopics: id === "mixed" ? current.enabledTopics : [id] }))} aria-pressed={config.topic === id}><Icon size={20} aria-hidden="true" /><strong>{label}</strong></button>)}</div></section>
       <section className="section"><SectionHeader number={2} title="Answer style" description="Recall it or pick an option." /><div className="mode-grid">{([

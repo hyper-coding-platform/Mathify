@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FeatureIntro } from "@/components/FeatureIntro";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,5 +18,5 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#315fe8" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" data-theme="light" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem("ssc-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}})()` }} /></head><body><ThemeToggle />{children}</body></html>;
+  return <html lang="en" data-theme="light" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem("ssc-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}})()` }} /></head><body><ThemeToggle /><FeatureIntro />{children}</body></html>;
 }
