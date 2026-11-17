@@ -1,6 +1,10 @@
 # SSC Calculation Trainer
 
-A mobile-first, anonymous mental-calculation trainer for SSC CGL preparation. It supports tables, squares, cubes, balanced mixed sessions, speed typing, and four-choice SSC exam mode. Everything runs in memory in the browser; there is no backend, account, tracking, or browser storage.
+A mobile-first, anonymous mental-calculation trainer for SSC preparation. Version 1.1 supports tables, squares, cubes, addition, subtraction, structured chaining, and balanced mixed sessions in typing or four-choice mode.
+
+Recommended speed benchmarks are configurable product estimates, not official SSC timings. Question records remain in memory. The only persisted value is the acknowledged release-note version.
+
+The main configuration screen is intentionally compact. Advanced ranges, arithmetic filters, chaining controls, and benchmark settings are available through **Customize** and remain drafts until applied. Session review shows correctness separately from each question’s own benchmark status.
 
 ## Run locally
 
@@ -20,7 +24,7 @@ npm run test:e2e
 npm run build
 ```
 
-Playwright requires its browser once: `npx playwright install chromium`.
+Playwright requires its browsers once: `npx playwright install chromium webkit`.
 
 ## Deployment
 

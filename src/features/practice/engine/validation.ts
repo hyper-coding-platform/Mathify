@@ -1,34 +1,17 @@
 import { MAX_BASE, MAX_QUESTIONS } from "../constants";
+import { additionCarries, subtractionBorrows } from "../generators/arithmetic";
 import type { IntRange, PracticeConfiguration } from "../types";
-
 export type ValidationErrors = Record<string, string>;
-
-function validateRange(name: string, range: IntRange, max: number, errors: ValidationErrors) {
-  if (!Number.isSafeInteger(range.start) || !Number.isSafeInteger(range.end)) errors[name] = "Use whole, finite numbers.";
-  else if (range.start < 0 || range.end > max) errors[name] = `Use values from 0 to ${max}.`;
-  else if (range.start > range.end) errors[name] = "Start must not exceed end.";
-}
-
+function validateRange(name: string, range: IntRange, max: number, errors: ValidationErrors) { if (!Number.isSafeInteger(range.start) || !Number.isSafeInteger(range.end)) errors[name] = "Use whole, finite numbers."; else if (range.start < 0 || range.end > max) errors[name] = `Use values from 0 to ${max}.`; else if (range.start > range.end) errors[name] = "Start must not exceed end."; }
+function hasPair(left: IntRange, right: IntRange, predicate: (a: number, b: number) => boolean) { const leftValues = [left.start, left.end, ...Array.from({ length: Math.min(100, left.end - left.start + 1) }, (_, i) => left.start + i)]; const rightValues = [right.start, right.end, ...Array.from({ length: Math.min(100, right.end - right.start + 1) }, (_, i) => right.start + i)]; return leftValues.some(a => rightValues.some(b => predicate(a, b))); }
 export function validateConfiguration(config: PracticeConfiguration): ValidationErrors {
-  const errors: ValidationErrors = {};
-  if (!Number.isSafeInteger(config.questionCount) || config.questionCount < 1 || config.questionCount > MAX_QUESTIONS) {
-    errors.questionCount = `Choose 1–${MAX_QUESTIONS} questions.`;
-  }
-  if (config.topic === "mixed" && config.enabledTopics.length === 0) errors.enabledTopics = "Select at least one topic.";
-  const enabled = config.topic === "mixed" ? config.enabledTopics : [config.topic];
-  if (enabled.includes("tables")) {
-    validateRange("multiplicand", config.tables.multiplicand, MAX_BASE, errors);
-    validateRange("multiplier", config.tables.multiplier, MAX_BASE, errors);
-    if (Number.isSafeInteger(config.tables.multiplicand.end) && Number.isSafeInteger(config.tables.multiplier.end) &&
-      !Number.isSafeInteger(config.tables.multiplicand.end * config.tables.multiplier.end)) errors.tables = "This range exceeds safe integer arithmetic.";
-  }
-  if (enabled.includes("squares")) validateRange("squares", config.squares, Math.floor(Math.sqrt(Number.MAX_SAFE_INTEGER)), errors);
-  if (enabled.includes("cubes")) validateRange("cubes", config.cubes, Math.floor(Math.cbrt(Number.MAX_SAFE_INTEGER)), errors);
+  const errors: ValidationErrors = {}; if (!Number.isSafeInteger(config.questionCount) || config.questionCount < 1 || config.questionCount > MAX_QUESTIONS) errors.questionCount = `Choose 1–${MAX_QUESTIONS} questions.`;
+  if (config.topic === "mixed" && config.enabledTopics.length === 0) errors.enabledTopics = "Select at least one topic."; const enabled = config.topic === "mixed" ? config.enabledTopics : [config.topic];
+  if (enabled.includes("tables")) { validateRange("multiplicand", config.tables.multiplicand, MAX_BASE, errors); validateRange("multiplier", config.tables.multiplier, MAX_BASE, errors); }
+  if (enabled.includes("squares")) validateRange("squares", config.squares, Math.floor(Math.sqrt(Number.MAX_SAFE_INTEGER)), errors); if (enabled.includes("cubes")) validateRange("cubes", config.cubes, Math.floor(Math.cbrt(Number.MAX_SAFE_INTEGER)), errors);
+  for (const topic of ["addition", "subtraction"] as const) if (enabled.includes(topic)) { const value = config[topic]; validateRange(`${topic}Left`, value.left, MAX_BASE, errors); validateRange(`${topic}Right`, value.right, MAX_BASE, errors); if (!errors[`${topic}Left`] && !errors[`${topic}Right`]) { const regroup = topic === "addition" ? additionCarries : subtractionBorrows; const possible = hasPair(value.left, value.right, (a, b) => (topic !== "subtraction" || value.allowNegative || a >= b) && (value.filter === "any" || regroup(a, b) === (value.filter === "with-regrouping"))); if (!possible) errors[topic] = "These ranges cannot produce the selected rule."; } }
+  if (enabled.includes("chaining")) { validateRange("chainInitial", config.chaining.initial, MAX_BASE, errors); validateRange("chainOperands", config.chaining.operands, MAX_BASE, errors); if (!Number.isSafeInteger(config.chaining.operandCount) || config.chaining.operandCount < 3 || config.chaining.operandCount > 10) errors.chaining = "Use 3–10 operands."; if (!Number.isSafeInteger(config.chaining.revealIntervalMs) || config.chaining.revealIntervalMs < 500 || config.chaining.revealIntervalMs > 10000) errors.revealInterval = "Use a reveal interval from 0.5–10 seconds."; }
+  if (config.benchmark.mode === "custom" && (!Number.isSafeInteger(config.benchmark.customTargetMs) || config.benchmark.customTargetMs < 500 || config.benchmark.customTargetMs > 120000)) errors.benchmark = "Use a target from 0.5–120 seconds.";
   return errors;
 }
-
-export const parseIntegerAnswer = (value: string): number | null => {
-  if (!/^-?\d+$/.test(value.trim())) return null;
-  const answer = Number(value);
-  return Number.isSafeInteger(answer) ? answer : null;
-};
+export const parseIntegerAnswer = (value: string): number | null => { if (!/^-?\d+$/.test(value.trim())) return null; const answer = Number(value); return Number.isSafeInteger(answer) ? answer : null; };

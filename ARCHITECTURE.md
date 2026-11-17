@@ -5,8 +5,8 @@
 - `src/app`: static-exported Next.js entry, metadata, favicon, and design tokens.
 - `src/components/practice`: configuration, live practice, and independent typing/MCQ inputs.
 - `src/components/analytics`: results, topic statistics, filters, sorting, and answer review.
-- `src/features/practice/generators`: topic registry, balanced session generation, and pure MCQ generation.
-- `src/features/practice/engine`: validation, reducer, monotonic timing, and derived analytics.
+- `src/features/practice/generators`: six-topic registry, bounded arithmetic/chaining generation, balanced interleaving, and pure MCQ generation.
+- `src/features/practice/engine`: validation, reducer, monotonic timing, benchmark resolution, recommendations, and derived analytics.
 - `src/tests`: unit, component, and Playwright coverage.
 
 ## State and timing
@@ -21,6 +21,10 @@ Mixed topic counts differ by at most one and are shuffled. Generators prefer uns
 
 Accuracy is `correct / answered × 100`. Average times use recorded question durations. Questions per minute is `answered / (session duration in minutes)`. Every result carries its answer mode, and no historical store exists; typing and MCQ history therefore cannot be combined.
 
+## Benchmarks and storage
+
+Each question snapshots its effective millisecond target. Analytics compare submitted monotonic duration with that snapshot; disabled targets are excluded. Automatic chaining targets include reveal time. Study data is not persisted; only the acknowledged release version may use local storage.
+
 ## Adding a topic
 
-Add its identifier to `PracticeTopic`, add a factory to the registry, define range validation and configuration controls, and add topic-aware distractors. The reducer, timer, inputs, and analytics do not need a second practice engine.
+Add its identifier to `PracticeTopic`, a bounded pure factory and canonical identity, validation/configuration, a benchmark estimate, topic-aware distractors, and unit tests. The reducer and timer stay shared.

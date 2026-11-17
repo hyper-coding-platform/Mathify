@@ -1,26 +1,10 @@
 import type { PracticeTopic, QuestionResult, SessionAnalytics, TopicAnalytics } from "../types";
-
 const average = (values: number[]) => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
-
+const nullableAverage = (values: number[]) => values.length ? average(values) : null;
+const median = (values: number[]) => { if (!values.length) return 0; const sorted = [...values].sort((a, b) => a - b), middle = Math.floor(sorted.length / 2); return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2; };
 export function calculateAnalytics(results: QuestionResult[], sessionDurationMs: number): SessionAnalytics {
-  const durations = results.map((result) => result.durationMs);
-  const correctResults = results.filter((result) => result.isCorrect);
-  const topicNames: PracticeTopic[] = ["tables", "squares", "cubes"];
-  const topics: TopicAnalytics[] = topicNames.flatMap((topic) => {
-    const values = results.filter((result) => result.topic === topic);
-    return values.length ? [{ topic, total: values.length, correct: values.filter((value) => value.isCorrect).length, averageTimeMs: average(values.map((value) => value.durationMs)) }] : [];
-  });
-  return {
-    total: results.length,
-    correct: correctResults.length,
-    incorrect: results.length - correctResults.length,
-    accuracy: results.length ? (correctResults.length / results.length) * 100 : 0,
-    totalDurationMs: Math.max(0, sessionDurationMs),
-    averageTimeMs: average(durations),
-    fastestMs: durations.length ? Math.min(...durations) : 0,
-    slowestMs: durations.length ? Math.max(...durations) : 0,
-    averageCorrectMs: average(correctResults.map((result) => result.durationMs)),
-    questionsPerMinute: sessionDurationMs > 0 ? results.length / (sessionDurationMs / 60_000) : 0,
-    topics,
-  };
+  const durations = results.map(r => r.durationMs), correctResults = results.filter(r => r.isCorrect), eligible = results.filter(r => r.benchmarkMs !== null), within = eligible.filter(r => r.durationMs <= r.benchmarkMs!), correctWithin = within.filter(r => r.isCorrect);
+  const topicNames: PracticeTopic[] = ["tables", "squares", "cubes", "addition", "subtraction", "chaining"];
+  const topics: TopicAnalytics[] = topicNames.flatMap(topic => { const values = results.filter(r => r.topic === topic); if (!values.length) return []; const topicEligible = values.filter(r => r.benchmarkMs !== null); return [{ topic, total: values.length, correct: values.filter(r => r.isCorrect).length, accuracy: values.filter(r => r.isCorrect).length / values.length * 100, averageTimeMs: average(values.map(r => r.durationMs)), withinTarget: topicEligible.filter(r => r.durationMs <= r.benchmarkMs!).length, benchmarkEligible: topicEligible.length, normalizedDurationRatio: nullableAverage(topicEligible.map(r => r.durationMs / r.benchmarkMs!)) }]; });
+  return { total: results.length, correct: correctResults.length, incorrect: results.length - correctResults.length, accuracy: results.length ? correctResults.length / results.length * 100 : 0, totalDurationMs: Math.max(0, sessionDurationMs), averageTimeMs: average(durations), medianTimeMs: median(durations), fastestMs: durations.length ? Math.min(...durations) : 0, slowestMs: durations.length ? Math.max(...durations) : 0, averageCorrectMs: average(correctResults.map(r => r.durationMs)), questionsPerMinute: sessionDurationMs > 0 ? results.length / (sessionDurationMs / 60000) : 0, averageBenchmarkMs: nullableAverage(eligible.map(r => r.benchmarkMs!)), withinTarget: within.length, beyondTarget: eligible.length - within.length, correctWithinTarget: correctWithin.length, withinTargetRate: eligible.length ? within.length / eligible.length * 100 : null, correctWithinTargetRate: eligible.length ? correctWithin.length / eligible.length * 100 : null, totalTimeAboveBenchmarkMs: eligible.reduce((sum, r) => sum + Math.max(0, r.durationMs - r.benchmarkMs!), 0), normalizedDurationRatio: nullableAverage(eligible.map(r => r.durationMs / r.benchmarkMs!)), slowestCorrect: correctResults.length ? [...correctResults].sort((a, b) => b.durationMs - a.durationMs)[0] : undefined, topics };
 }

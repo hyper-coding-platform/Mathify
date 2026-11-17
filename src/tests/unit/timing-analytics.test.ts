@@ -14,7 +14,7 @@ describe("timing and analytics", () => {
   });
 
   it("computes both accuracy and speed", () => {
-    const base = { topic: "tables", expression: "2 × 2", answerMode: "typing", correctAnswer: 4 } as const;
+    const base = { topic: "tables", expression: "2 × 2", answerMode: "typing", correctAnswer: 4, benchmarkMs: 2000 } as const;
     const results: QuestionResult[] = [
       { ...base, questionId: "1", userAnswer: 4, isCorrect: true, durationMs: 1000 },
       { ...base, questionId: "2", userAnswer: 5, isCorrect: false, durationMs: 3000 },
@@ -24,5 +24,7 @@ describe("timing and analytics", () => {
     expect(analytics.averageTimeMs).toBe(2000);
     expect(analytics.questionsPerMinute).toBe(24);
     expect(analytics.topics[0]).toMatchObject({ total: 2, correct: 1 });
+    expect(analytics.withinTarget).toBe(1);
+    expect(analytics.correctWithinTargetRate).toBe(50);
   });
 });

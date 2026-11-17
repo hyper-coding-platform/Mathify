@@ -2,6 +2,7 @@
 
 import { ArrowLeft, BookOpen, Calculator, Check } from "lucide-react";
 import { useMemo, useState } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const MIN_NUMBER = 1;
 const MAX_NUMBER = 100;
@@ -30,7 +31,7 @@ export function StudyPage() {
 
   return <main className="shell study-shell"><div className="study-container">
     <header className="study-header">
-      <a className="back-link" href="/"><ArrowLeft size={16} aria-hidden="true" /> Back to practice</a>
+      <div className="study-toolbar"><a className="back-link" href="/"><ArrowLeft size={16} aria-hidden="true" /> Back to practice</a><ThemeToggle /></div>
       <div className="brand study-brand"><div className="brand-mark"><BookOpen size={24} aria-hidden="true" /></div><div><h1>Study reels</h1><p>Swipe through exactly what you want to revise.</p></div></div>
     </header>
 
